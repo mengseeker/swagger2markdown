@@ -1,0 +1,389 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "api/api.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "MiningAgentService"
+    }
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/fetch_job": {
+      "get": {
+        "summary": "获取挖掘作业",
+        "operationId": "MiningAgentService_FetchJob",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiFetchJobResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "workerId",
+            "description": "worker_id 工作节点id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "host",
+            "description": "工作节点host",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ip",
+            "description": "工作节点ip",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "description": "工作节点版本，用于判断当前工作节点是否同服务版本一致，不一致时，worker会自动退出",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "MiningAgentService"
+        ]
+      }
+    },
+    "/v1/push_event": {
+      "post": {
+        "summary": "推送挖掘作业事件",
+        "operationId": "MiningAgentService_PushEvent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiPushEventResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiPushEventReq"
+            }
+          }
+        ],
+        "tags": [
+          "MiningAgentService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "JobMiningConfig": {
+      "type": "object",
+      "properties": {
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/JobMiningConfigTag"
+          },
+          "title": "算子"
+        },
+        "dataGeoType": {
+          "type": "string",
+          "title": "数据geo类型，用于位置纠偏"
+        }
+      },
+      "title": "挖掘任务配置"
+    },
+    "JobMiningConfigTag": {
+      "type": "object",
+      "properties": {
+        "Type": {
+          "type": "string",
+          "title": "算子类型"
+        },
+        "Name": {
+          "type": "string",
+          "title": "算子名称"
+        }
+      }
+    },
+    "JobSuccessCase": {
+      "type": "object",
+      "properties": {
+        "case": {
+          "type": "string",
+          "title": "场景存储路径"
+        },
+        "hmi": {
+          "type": "string",
+          "title": "场景hmi存储路径"
+        },
+        "tags": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "场景类型"
+        },
+        "similarity": {
+          "type": "number",
+          "format": "float",
+          "title": "场景质检：相识性"
+        },
+        "interactivity": {
+          "type": "number",
+          "format": "float",
+          "title": "场景质检：交互性"
+        },
+        "fidelity": {
+          "type": "number",
+          "format": "float",
+          "title": "场景质检：可控性"
+        },
+        "mileage": {
+          "type": "number",
+          "format": "double",
+          "title": "场景里程"
+        },
+        "duration": {
+          "type": "number",
+          "format": "double",
+          "title": "场景时长"
+        },
+        "occurredAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "场景发生时间"
+        }
+      },
+      "title": "挖掘结果"
+    },
+    "PushEventReqJobFailed": {
+      "type": "object",
+      "properties": {
+        "jobId": {
+          "type": "string",
+          "format": "uint64",
+          "title": "挖掘作业id"
+        },
+        "reason": {
+          "type": "string",
+          "title": "失败原因"
+        }
+      },
+      "title": "任务失败消息"
+    },
+    "PushEventReqJobStart": {
+      "type": "object",
+      "properties": {
+        "jobId": {
+          "type": "string",
+          "format": "uint64",
+          "title": "挖掘作业id"
+        }
+      },
+      "title": "任务启动消息"
+    },
+    "PushEventReqJobSuccess": {
+      "type": "object",
+      "properties": {
+        "jobId": {
+          "type": "string",
+          "format": "uint64",
+          "title": "挖掘作业id"
+        },
+        "cases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/JobSuccessCase"
+          },
+          "title": "挖掘结果"
+        }
+      },
+      "title": "任务成功消息"
+    },
+    "apiFetchJobResp": {
+      "type": "object",
+      "properties": {
+        "job": {
+          "$ref": "#/definitions/apiJob",
+          "title": "job 挖掘job信息"
+        },
+        "hasExpired": {
+          "type": "boolean",
+          "title": "节点是否过期"
+        }
+      }
+    },
+    "apiJob": {
+      "type": "object",
+      "properties": {
+        "info": {
+          "$ref": "#/definitions/apiJobInfo",
+          "title": "任务信息"
+        },
+        "timeout": {
+          "type": "string",
+          "format": "int64",
+          "title": "任务执行超时"
+        }
+      }
+    },
+    "apiJobInfo": {
+      "type": "object",
+      "properties": {
+        "jobId": {
+          "type": "string",
+          "format": "uint64",
+          "title": "job_id"
+        },
+        "deviceId": {
+          "type": "string",
+          "format": "uint64",
+          "title": "设备id"
+        },
+        "dataStartAt": {
+          "type": "string",
+          "format": "int64",
+          "title": "数据分片开始时间"
+        },
+        "dataEndAt": {
+          "type": "string",
+          "format": "int64",
+          "title": "数据分片结束时间"
+        },
+        "s3": {
+          "$ref": "#/definitions/apiS3",
+          "title": "s3存储配置"
+        },
+        "config": {
+          "$ref": "#/definitions/JobMiningConfig",
+          "title": "算子配置"
+        },
+        "mapS3Path": {
+          "type": "string",
+          "title": "地图路径"
+        },
+        "s3SaveDir": {
+          "type": "string",
+          "title": "挖掘结果存储位置"
+        }
+      }
+    },
+    "apiPushEventReq": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/apiPushEventReqType",
+          "title": "事件类型"
+        },
+        "jobStart": {
+          "$ref": "#/definitions/PushEventReqJobStart"
+        },
+        "jobFailed": {
+          "$ref": "#/definitions/PushEventReqJobFailed"
+        },
+        "jobSuccess": {
+          "$ref": "#/definitions/PushEventReqJobSuccess"
+        }
+      }
+    },
+    "apiPushEventReqType": {
+      "type": "string",
+      "enum": [
+        "TypeUnknown",
+        "TypeJobStart",
+        "TypeJobFailed",
+        "TypeJobSuccess"
+      ],
+      "default": "TypeUnknown",
+      "description": "- TypeUnknown: 未知类型\n - TypeJobStart: 任务启动\n - TypeJobFailed: 任务失败\n - TypeJobSuccess: 任务成功",
+      "title": "事件类型"
+    },
+    "apiPushEventResp": {
+      "type": "object"
+    },
+    "apiS3": {
+      "type": "object",
+      "properties": {
+        "bucket": {
+          "type": "string",
+          "title": "s3 bucket配置"
+        },
+        "endpoint": {
+          "type": "string",
+          "title": "s3 访问地址"
+        },
+        "accessKey": {
+          "type": "string",
+          "title": "s3 ak"
+        },
+        "secretKey": {
+          "type": "string",
+          "title": "s3 sk"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}
