@@ -8,7 +8,7 @@ import (
 	"errors"
 	"io"
 	"os"
-	"swagger2markdown/swagger"
+	"github.com/mengseeker/swagger2markdown/swagger"
 
 	"github.com/spf13/cobra"
 )

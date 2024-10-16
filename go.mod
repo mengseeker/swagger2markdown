@@ -1,4 +1,4 @@
-module swagger2markdown
+module github.com/mengseeker/swagger2markdown
 
 go 1.21.4
 
