@@ -86,15 +86,15 @@ func (t *tplEvaluator) ExpressParam(p Param) []Express {
 
 	if p.Ref != nil {
 		schema := t.GetRef(*p.Ref)
-		expressParams = append(expressParams, t.ExpressSchema(schema, p.Required, p.Name)...)
+		expressParams = append(expressParams, t.ExpressSchema(schema, p.Required, appendName(nil, p.Name)...)...)
 	}
 
 	if p.Schema != nil {
-		expressParams = append(expressParams, t.ExpressSchema(*p.Schema, p.Required, p.Name)...)
+		expressParams = append(expressParams, t.ExpressSchema(*p.Schema, p.Required, appendName(nil, p.Name)...)...)
 	}
 
 	if p.Name != "" {
-		expressParams = append(expressParams, Express{Name: p.Name, Type: t.ParamType(p), Required: p.Required, Description: p.Description})
+		expressParams = append(expressParams, Express{Name: p.Name, Type: t.ParamType(p), Required: p.Required, Description: Escape(p.Description)})
 	}
 
 	return expressParams
@@ -116,7 +116,7 @@ func (t *tplEvaluator) ExpressSchema(s Schema, required bool, parent ...string) 
 		if s.Format != "" {
 			jt = fmt.Sprintf("%s(%s)", s.Type, s.Format)
 		}
-		expressParams = append(expressParams, Express{Name: JoinName(parent), Type: jt, Required: required, Description: s.Title})
+		expressParams = append(expressParams, Express{Name: joinName(parent), Type: jt, Required: required, Description: s.BuildDescription()})
 	}
 
 	if s.Type == "array" {
@@ -134,7 +134,7 @@ func (t *tplEvaluator) ExpressSchema(s Schema, required bool, parent ...string) 
 
 	if s.Type == "object" {
 		for k, v := range s.Properties {
-			expressParams = append(expressParams, t.ExpressSchema(v, slices.Contains(s.Required, k), append(parent, k)...)...)
+			expressParams = append(expressParams, t.ExpressSchema(v, slices.Contains(s.Required, k), appendName(parent, k)...)...)
 		}
 		return
 	}
@@ -142,7 +142,14 @@ func (t *tplEvaluator) ExpressSchema(s Schema, required bool, parent ...string) 
 	return
 }
 
-func JoinName(names []string) string {
+func appendName(a []string, n string) []string {
+	if n != "" {
+		return append(a, n)
+	}
+	return a
+}
+
+func joinName(names []string) string {
 	bs := strings.Builder{}
 	for _, v := range names {
 		if v != "" {

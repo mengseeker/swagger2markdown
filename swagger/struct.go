@@ -59,6 +59,32 @@ type Operation struct {
 	Deprecated   bool                `json:"deprecated" yaml:"deprecated"`
 }
 
+func (o Operation) FilterParams(pt string) []Param {
+	var params []Param
+	for _, param := range o.Parameters {
+		if param.In == pt {
+			params = append(params, param)
+		}
+	}
+	return params
+}
+
+func (o Operation) PathParams() []Param {
+	return o.FilterParams("path")
+}
+
+func (o Operation) QueryParams() []Param {
+	return o.FilterParams("query")
+}
+
+func (o Operation) BodyParams() []Param {
+	return o.FilterParams("body")
+}
+
+func (o Operation) HeaderParams() []Param {
+	return o.FilterParams("header")
+}
+
 type Param struct {
 	Ref    *Ref    `json:"$ref" yaml:"$ref"`
 	Schema *Schema `json:"schema" yaml:"schema"`
@@ -104,10 +130,32 @@ type Response struct {
 type Schema struct {
 	Ref Ref `json:"$ref" yaml:"$ref"`
 
-	Type       string            `json:"type" yaml:"type"`
-	Format     string            `json:"format" yaml:"format"`
-	Title      string            `json:"title" yaml:"title"`
-	Required   []string          `json:"required" yaml:"required"`
-	Items      *Schema           `json:"items" yaml:"items"`
-	Properties map[string]Schema `json:"properties" yaml:"properties"`
+	Type        string            `json:"type" yaml:"type"`
+	Format      string            `json:"format" yaml:"format"`
+	Title       string            `json:"title" yaml:"title"`
+	Default     any               `json:"default" yaml:"default"`
+	Description string            `json:"description" yaml:"description"`
+	Enum        []any             `json:"enum" yaml:"enum"`
+	Required    []string          `json:"required" yaml:"required"`
+	Items       *Schema           `json:"items" yaml:"items"`
+	Properties  map[string]Schema `json:"properties" yaml:"properties"`
+}
+
+func (s Schema) BuildDescription() string {
+	desc := []string{}
+	if s.Title != "" {
+		desc = append(desc, s.Title)
+	}
+	if s.Description != "" {
+		desc = append(desc, s.Description)
+	}
+	if s.Default != nil {
+		desc = append(desc, "default:"+fmt.Sprint(s.Default))
+	}
+
+	return Escape(strings.Join(desc, "; "))
+}
+
+func Escape(s string) string {
+	return strings.ReplaceAll(s, "\n", "<br>")
 }
