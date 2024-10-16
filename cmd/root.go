@@ -8,6 +8,7 @@ import (
 	"errors"
 	"io"
 	"os"
+
 	"github.com/mengseeker/swagger2markdown/swagger"
 
 	"github.com/spf13/cobra"
@@ -24,6 +25,8 @@ var (
 var rootCmd = &cobra.Command{
 	Use:   "swagger2markdown",
 	Short: "transform swagger into markdown",
+	Long: `transform swagger into markdown.
+only support swagger 2.0`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
 			inputData []byte
