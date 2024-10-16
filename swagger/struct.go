@@ -102,7 +102,7 @@ type Param struct {
 }
 
 func (p Param) BuildDescription() string {
-	desc := []string{strings.ReplaceAll(p.Description, "\n", " ")}
+	desc := []string{p.Description}
 	if p.Default != "" {
 		desc = append(desc, "default:"+p.Default)
 	}
@@ -115,7 +115,7 @@ func (p Param) BuildDescription() string {
 	if p.Maximum != nil {
 		desc = append(desc, "max:"+fmt.Sprint(p.Maximum))
 	}
-	return strings.Join(desc, "; ")
+	return Escape(strings.Join(desc, ";<br>"))
 }
 
 type ParamItems struct {
@@ -153,7 +153,7 @@ func (s Schema) BuildDescription() string {
 		desc = append(desc, "default:"+fmt.Sprint(s.Default))
 	}
 
-	return Escape(strings.Join(desc, "; "))
+	return Escape(strings.Join(desc, ";<br>"))
 }
 
 func Escape(s string) string {
