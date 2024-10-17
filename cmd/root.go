@@ -15,10 +15,11 @@ import (
 )
 
 var (
-	customTemplate string
-	inputFile      string
-	inputFormat    string
-	outputFile     string
+	customTemplate        string
+	inputFile             string
+	inputFormat           string
+	outputFile            string
+	ignoreDefaultResponse bool
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -64,7 +65,10 @@ only support swagger 2.0`,
 			defer output.(*os.File).Close()
 		}
 
-		return swagger.Execute(inputData, inputFormat, output, customTemplate)
+		return swagger.Execute(inputData, inputFormat, output, swagger.ExecuteConfig{
+			TemplateFile:          customTemplate,
+			IgnoreDefaultResponse: ignoreDefaultResponse,
+		})
 	},
 }
 
@@ -83,4 +87,5 @@ func init() {
 	rootCmd.Flags().StringVarP(&inputFile, "input", "i", "", "input file, can be json or yaml format, default read from stdin")
 	rootCmd.Flags().StringVarP(&inputFormat, "inputFormat", "f", "", "input file format, json or yaml, default auto detect")
 	rootCmd.Flags().StringVarP(&outputFile, "output", "o", "", "output file, default print to stdout")
+	rootCmd.Flags().BoolVar(&ignoreDefaultResponse, "ignoreDefaultResponse", false, "ignore default response")
 }

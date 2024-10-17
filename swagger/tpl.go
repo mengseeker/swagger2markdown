@@ -17,17 +17,25 @@ var (
 	DefaultTelContent string
 )
 
-func Execute(swaggerData []byte, format string, output io.Writer, tplf string) (err error) {
-	tplEvaluator := tplEvaluator{}
+type ExecuteConfig struct {
+	TemplateFile          string
+	IgnoreDefaultResponse bool
+}
+
+func Execute(swaggerData []byte, format string, output io.Writer, cfg ExecuteConfig) (err error) {
+	tplEvaluator := tplEvaluator{
+		ExecuteConfig: cfg,
+	}
+
 	if err = tplEvaluator.ParseSwagger(swaggerData, format); err != nil {
 		return fmt.Errorf("parsing swagger file: %w", err)
 	}
 
 	var tpl = template.New("swagger-tpl").Funcs(tplEvaluator.FuncMap())
-	if tplf == "" {
+	if cfg.TemplateFile == "" {
 		tpl, err = tpl.Parse(DefaultTelContent)
 	} else {
-		tpl, err = tpl.ParseFiles(tplf)
+		tpl, err = tpl.ParseFiles(cfg.TemplateFile)
 	}
 	if err != nil {
 		return fmt.Errorf("parse tpl %w", err)
@@ -37,6 +45,7 @@ func Execute(swaggerData []byte, format string, output io.Writer, tplf string) (
 }
 
 type tplEvaluator struct {
+	ExecuteConfig
 	Swagger
 }
 
@@ -46,6 +55,13 @@ func (t *tplEvaluator) ParseSwagger(swaggerData []byte, format string) (err erro
 		err = yaml.Unmarshal(swaggerData, &t.Swagger)
 	default:
 		err = json.Unmarshal(swaggerData, &t.Swagger)
+	}
+	if t.IgnoreDefaultResponse {
+		for k := range t.Swagger.Paths {
+			for p := range t.Swagger.Paths[k] {
+				delete(t.Swagger.Paths[k][p].Responses, "default")
+			}
+		}
 	}
 	return
 }

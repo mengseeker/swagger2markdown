@@ -8,11 +8,9 @@
 
 ## {{Upper $method}} {{$path}}
     {{- with $operation}}
-
-### Summary
 {{.Summary}}
 
-
+{{- if .Parameters}}
 ### Parameters
 {{- $hp := $operation.HeaderParams}}
 {{- $dp := $operation.PathParams}}
@@ -66,26 +64,22 @@
           {{- end}}
         {{- end}}
        {{- end}}
+{{- end}}
 
 ### Responses
       {{- range $respName, $resp := .Responses}}
 
 #### {{$respName}}
 {{$resp.Description}}
-
+        {{- $exps := ExpressResponse $resp }}
+        {{- if $exps}}
 | Name | type | Required | Description |
 | ---- | ---- | -------- | ----------- |
-        {{- $exps := ExpressResponse $resp }}
-        {{- range $exp := $exps}}
+          {{- range $exp := $exps}}
 | {{$exp.Name}} | {{$exp.Type}} | {{$exp.Required}} | {{$exp.Description}} |
+          {{- end}}
         {{- end}}
-
       {{- end}}
-
     {{- end}}
-
-
   {{- end}}
-
-
 {{- end}}
