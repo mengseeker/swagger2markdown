@@ -117,6 +117,9 @@ func (t *tplEvaluator) ExpressParam(p Param) []Express {
 }
 
 func (t *tplEvaluator) ExpressResponse(r Response) []Express {
+	if r.Schema == nil {
+		return []Express{}
+	}
 	return t.ExpressSchema(*r.Schema, true)
 }
 

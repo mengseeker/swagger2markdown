@@ -7,7 +7,9 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"net/http"
 	"os"
+	"strings"
 
 	"github.com/mengseeker/swagger2markdown/swagger"
 
@@ -35,8 +37,14 @@ only support swagger 2.0`,
 			err       error
 		)
 
-		if inputFile == "" {
+		if len(args) == 1 {
+			inputFile = args[0]
+		}
+
+		if inputFile == "" || inputFile == "-" {
 			inputData, err = io.ReadAll(os.Stdin)
+		} else if strings.HasPrefix(inputFile, "http://") || strings.HasPrefix(inputFile, "https://") {
+			inputData, err = ReadHTTPBody(inputFile)
 		} else {
 			inputData, err = os.ReadFile(inputFile)
 		}
@@ -88,4 +96,13 @@ func init() {
 	rootCmd.Flags().StringVarP(&inputFormat, "inputFormat", "f", "", "input file format, json or yaml, default auto detect")
 	rootCmd.Flags().StringVarP(&outputFile, "output", "o", "", "output file, default print to stdout")
 	rootCmd.Flags().BoolVar(&ignoreDefaultResponse, "ignoreDefaultResponse", false, "ignore default response")
+}
+
+func ReadHTTPBody(url string) ([]byte, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return io.ReadAll(resp.Body)
 }
