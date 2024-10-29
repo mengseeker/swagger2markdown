@@ -128,7 +128,8 @@ type Response struct {
 }
 
 type Schema struct {
-	Ref Ref `json:"$ref" yaml:"$ref"`
+	parent *Schema
+	Ref    Ref `json:"$ref" yaml:"$ref"`
 
 	Type        string            `json:"type" yaml:"type"`
 	Format      string            `json:"format" yaml:"format"`

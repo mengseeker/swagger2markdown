@@ -126,6 +126,23 @@ func (t *tplEvaluator) ExpressResponse(r Response) []Express {
 func (t *tplEvaluator) ExpressSchema(s Schema, required bool, parent ...string) (expressParams []Express) {
 	if s.Ref != "" {
 		schema := t.GetRef(s.Ref)
+		schema.Format = strings.TrimPrefix(s.Ref, "#/definitions/")
+
+		// 判断循环引用类型
+		ps := s
+		for {
+			if ps.parent == nil {
+				break
+			}
+			ps = *ps.parent
+			if ps.Ref != "" && ps.Ref == s.Ref {
+				jt := fmt.Sprintf("%s(%s)", schema.Type, schema.Format)
+				expressParams = append(expressParams, Express{Name: joinName(parent), Type: jt, Required: required, Description: s.BuildDescription()})
+				return
+			}
+		}
+
+		schema.parent = &s
 		expressParams = append(expressParams, t.ExpressSchema(schema, required, parent...)...)
 		return
 	}
@@ -145,6 +162,7 @@ func (t *tplEvaluator) ExpressSchema(s Schema, required bool, parent ...string) 
 			} else {
 				parent = append(parent, "[]")
 			}
+			s.Items.parent = &s
 			expressParams = append(expressParams, t.ExpressSchema(*s.Items, required, parent...)...)
 		}
 
@@ -153,6 +171,7 @@ func (t *tplEvaluator) ExpressSchema(s Schema, required bool, parent ...string) 
 
 	if s.Type == "object" {
 		for k, v := range s.Properties {
+			v.parent = &s
 			expressParams = append(expressParams, t.ExpressSchema(v, slices.Contains(s.Required, k), appendName(parent, k)...)...)
 		}
 		return
