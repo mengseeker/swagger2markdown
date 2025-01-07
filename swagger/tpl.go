@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"slices"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -174,6 +175,9 @@ func (t *tplEvaluator) ExpressSchema(s Schema, required bool, parent ...string) 
 			v.parent = &s
 			expressParams = append(expressParams, t.ExpressSchema(v, slices.Contains(s.Required, k), appendName(parent, k)...)...)
 		}
+		sort.Slice(expressParams, func(i, j int) bool {
+			return expressParams[i].Name < expressParams[j].Name
+		})
 		return
 	}
 
